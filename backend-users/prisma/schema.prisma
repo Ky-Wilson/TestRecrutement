@@ -1,0 +1,36 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  // Plus de "url" ici ! On le met dans prisma.config.ts
+}
+
+model User {
+  id          String   @id @default(uuid())
+  firstName   String
+  lastName    String
+  birthDate   DateTime
+  city        String
+  country     String   // ex: "CI", "FR", "SN"
+  avatar      String?
+  company     String?
+  jobPosition String?
+  mobile      String?
+  username    String   @unique
+  email       String   @unique
+  password    String   // mot de passe hashé
+  role        Role     @default(USER)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("users")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
