@@ -15,11 +15,10 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 9090;
 
-// === MIDDLEWARES IMPORTANTS (dans cet ordre) ===
 app.use(helmet());
 app.use(cors());
-app.use(express.json());                    // ← Très important
-app.use(express.urlencoded({ extended: true })); // ← Important aussi
+app.use(express.json());                   
+app.use(express.urlencoded({ extended: true }));
 
 // Configuration Swagger
 const swaggerOptions = {

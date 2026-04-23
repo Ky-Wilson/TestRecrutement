@@ -1,7 +1,6 @@
-// src/middleware/multer.middleware.ts
 import multer from 'multer';
 
-const storage = multer.memoryStorage(); // On garde en mémoire (pas besoin de sauvegarder sur disque)
+const storage = multer.memoryStorage(); 
 
 export const upload = multer({
   storage,
