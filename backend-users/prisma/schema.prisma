@@ -1,11 +1,10 @@
-// prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
+  engineType = "library"
 }
 
 datasource db {
   provider = "mysql"
-  // Plus de "url" ici ! On le met dans prisma.config.ts
 }
 
 model User {
@@ -14,16 +13,15 @@ model User {
   lastName    String
   birthDate   DateTime
   city        String
-  country     String   // ex: "CI", "FR", "SN"
+  country     String
   avatar      String?
   company     String?
   jobPosition String?
   mobile      String?
   username    String   @unique
   email       String   @unique
-  password    String   // mot de passe hashé
+  password    String
   role        Role     @default(USER)
-
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

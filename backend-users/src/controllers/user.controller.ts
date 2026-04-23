@@ -1,6 +1,8 @@
-// src/controllers/user.controller.ts
 import { Request, Response } from 'express';
+import prisma from '../config/database';
 import { generateUsers } from '../utils/fakerGenerator';
+import bcrypt from 'bcryptjs';
+import { GeneratedUser } from '../utils/fakerGenerator';
 
 export const generateUsersHandler = async (req: Request, res: Response) => {
   try {
@@ -30,10 +32,84 @@ export const generateUsersHandler = async (req: Request, res: Response) => {
   }
 };
 
-// Placeholder pour l'import batch (on va l'implémenter juste après)
+// ==================== IMPORT BATCH ====================
 export const importUsersHandler = async (req: Request, res: Response) => {
-  res.status(501).json({ 
-    success: false, 
-    message: "Endpoint /api/users/batch en cours d'implémentation" 
-  });
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "Aucun fichier fourni" });
+    }
+
+    const fileContent = req.file.buffer.toString('utf-8');
+    const usersToImport: GeneratedUser[] = JSON.parse(fileContent);
+
+    if (!Array.isArray(usersToImport)) {
+      return res.status(400).json({ success: false, message: "Le fichier doit contenir un tableau d'utilisateurs" });
+    }
+
+    let successCount = 0;
+    let failedCount = 0;
+    const errors: string[] = [];
+
+    for (const user of usersToImport) {
+      try {
+        // Vérifier si email ou username existe déjà
+        const existingUser = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { email: user.email },
+              { username: user.username }
+            ]
+          }
+        });
+
+        if (existingUser) {
+          failedCount++;
+          errors.push(`Doublon : ${user.email} ou ${user.username}`);
+          continue;
+        }
+
+        // Hash du mot de passe
+        const hashedPassword = await bcrypt.hash(user.password, 12);
+
+        await prisma.user.create({
+          data: {
+            firstName: user.firstName,
+            lastName: user.lastName,
+            birthDate: new Date(user.birthDate),
+            city: user.city,
+            country: user.country,
+            avatar: user.avatar,
+            company: user.company,
+            jobPosition: user.jobPosition,
+            mobile: user.mobile,
+            username: user.username,
+            email: user.email,
+            password: hashedPassword,
+            role: user.role,
+          }
+        });
+
+        successCount++;
+      } catch (err: any) {
+        failedCount++;
+        errors.push(`Erreur pour ${user.email} : ${err.message}`);
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Import terminé",
+      total: usersToImport.length,
+      success: successCount,
+      failed: failedCount,
+      errors: errors.length > 0 ? errors : undefined
+    });
+
+  } catch (error: any) {
+    console.error(error);
+    return res.status(500).json({ 
+      success: false, 
+      message: "Erreur lors de l'import du fichier" 
+    });
+  }
 };
