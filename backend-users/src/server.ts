@@ -1,3 +1,4 @@
+// src/server.ts
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -14,11 +15,11 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 9090;
 
-// Middleware de sécurité et parsing
+// === MIDDLEWARES IMPORTANTS (dans cet ordre) ===
 app.use(helmet());
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json());                    // ← Très important
+app.use(express.urlencoded({ extended: true })); // ← Important aussi
 
 // Configuration Swagger
 const swaggerOptions = {
